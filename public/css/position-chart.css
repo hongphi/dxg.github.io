@@ -965,7 +965,7 @@ input[type="checkbox"]:after {
 	padding: 10px;
 }
 .btn-remove{
-    height:33px;
+    line-height: 31px;
     border-radius:3px;
     width:76px!important;
     border:none;
@@ -1026,16 +1026,16 @@ input[type="checkbox"]:after {
 #confirm1-position-modal .modal-body{
     padding:20px 20px 0px 20px;
 }
-.remove-modal{
+.footer-remove-position-modal{
     height:54px;
     line-height:54px;
     background:#f9f9f9;
     width:100%;
 }
-.btn-edit-position i{
+
+.btn-edit-position i, .btn-remove i{
     vertical-align: middle;
     font-size:20px;
-    margin-top:-2px;
 }
 #confirm2-position-modal .modal-body{
     padding:10px 20px 0px 20px;
@@ -1067,6 +1067,10 @@ input[type="checkbox"]:after {
     max-width: 410px;
     word-break: break-word;
 }
+.el-search-remove-position-modal{
+    /*Hot fix, overwrite font-family by semantic-ui: Lato*/
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+}
 #confirm1-position-modal ul{
     list-style: none;
 }
@@ -1076,4 +1080,18 @@ input[type="checkbox"]:after {
     display: inline-block;
     width: 1em;
     margin-left: -1em
+}
+#todoer-modal .assign-performer.blank-kpilib{
+    text-align: center;
+}
+#todoer-modal .assign-performer.blank-kpilib p{
+    text-align: center;
+    width:255px;
+    margin:100px auto 10px auto;
+    color:#ababab;
+}
+#todoer-modal .assign-performer.blank-kpilib a{
+    color:#008b8b;
+    font-size:16px;
+    font-weight:bold;
 }

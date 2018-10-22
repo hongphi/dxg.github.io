@@ -3579,7 +3579,7 @@ var v = new Vue({
             // $('#complate-review-modal').modal();
             // this.count_zero_score_kpi();
             modal_complete_review.complete_review_modal_1(COMMON.UserViewedId, this.organization, this.employee_performance, this.month_1_name,
-                this.month_2_name, this.month_3_name, this.total_weight,this.quarter_by_id);
+                this.month_2_name, this.month_3_name, this.total_weight,this.quarter_by_id,this.current_quarter);
 
         },
 
@@ -4257,16 +4257,29 @@ var v = new Vue({
         set_selected_kpilib: function (k) {
             this.selected_kpilib = k;
         },
-        average_3_month: function (employee_performance) {
+        average_3_month: function (employee_performance, include_exscore=false) {
             var count = 0;
             var total = 0;
-            ['month_1_score', 'month_2_score', 'month_3_score'].forEach(function (key) {
+            var that = this;
+            ['month_1_score', 'month_2_score', 'month_3_score'].forEach(function (key, index) {
                 // if (key != 'current' && employee_performance[key] > 0) { # remove key since it was not neccessary
-                if (employee_performance[key] > 0) {
+                console.log('====', index);
+
+                if (include_exscore == true){
+                    // total = total + this.exscore_score['1'].score + this.exscore_score['2'].score + this.exscore_score['3'].score
+                    if (employee_performance[key] + that.exscore_score[index +1].score > 0) {
+                        total += employee_performance[key] + that.exscore_score[index +1].score;
+                        count += 1;
+                    }
+                }else{
+                    if (employee_performance[key] > 0) {
                     total += employee_performance[key];
                     count += 1;
+                    }
                 }
-            })
+
+            });
+
 
             if (count > 0) {
                 return total / count;
