@@ -143,6 +143,10 @@ var importKpiPosition = new Vue({
             }
             return str;
         },
+        convert_new_line: function (str) {
+            str = str.replace(/\n|\r\n|\r/g,'<br/>');
+            return str
+        }
     },
     methods: {
         hideUnusedTableHead: function () {
@@ -511,7 +515,7 @@ var importKpiPosition = new Vue({
                                             "check_error_quarter_4": false,
                                             "index": "",
                                             "bsc_category": "",
-                                            "data_source":"",
+                                            "data_source":datasource,
                                             "_uuid": makeid()
 
 
