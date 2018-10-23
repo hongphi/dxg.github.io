@@ -70,7 +70,26 @@ Vue.component('cjs-component-selected-position', selected_position);
             var self = this
                 self.$emit('comfirm',self.data_edit_kpi)
         },
-
+        check_number: function(e){
+            var _number = String.fromCharCode(e.keyCode);
+            if ('0123456789.'.indexOf(_number) !== -1) {
+                return _number;
+            }
+            e.preventDefault();
+            return false;
+        },
+        check_paste: function (evt) {
+                evt.preventDefault();
+                evt.stopPropagation();
+        },
+        valid_change: function (obj, prop) {
+            var val = parseFloat(obj[prop]);
+            if (isNaN(val)) {
+                Vue.set(obj, prop, null);
+            } else {
+                Vue.set(obj, prop, val);
+            }
+        },
     }
 });
 
@@ -94,7 +113,8 @@ var importKpiPosition = new Vue({
             data: {},
             index: -1,
             check_error: false,
-            msg: ""
+            msg: "",
+            errors:{}
         },
         organization:{},
         file: {},
@@ -698,12 +718,13 @@ var importKpiPosition = new Vue({
             var that = this;
             var operator = ['<=', '>=', '='];
             var scores = ['q1', 'q2', 'q3', 'q4'];
+            var months = ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10', 't11', 't12']
             if (index == undefined) {
                 return;
             }
             var kpi = self.kpis[index];
             if (self.enable_allocation_target) {
-                kpi = that.validateTargetScoreFollowAllocationTarget(kpi)
+                kpi = self.validateTargetScoreFollowAllocationTarget(kpi)
             }
             kpi.bsc_category = kpi.type_kpi.toString();
             kpi.weight = kpi.weight.toString()
@@ -718,10 +739,12 @@ var importKpiPosition = new Vue({
                 kpi.measurement = ""
             }
             kpi.msg = '';
-            that.check_file = true;
+            self.check_file = true;
             kpi.status = null;
-            var messages = '';
+            var quarter_error = '';// lưu quý bị lỗi
+            var months_error = '';// lưu tháng bị lỗi
             kpi.validated = true;
+            kpi.year = kpi.year.toString().replace(',', '')
             if (kpi.bsc_category.trim() == '') {
                 kpi.validated = false;
                 kpi.msg = kpi.msg + "\n" + gettext("KPI code must not be empty");
@@ -735,26 +758,33 @@ var importKpiPosition = new Vue({
                     kpi.bsc_category = is_bsc_categoty;
                 }
             }
-            if (that.method.indexOf(kpi.score_calculation_type.trim().toLowerCase()) == -1) {
+            if (self.method.indexOf(kpi.score_calculation_type.trim().toLowerCase()) == -1) {
                 kpi.validated = false;
-                that.check_file = false;
+                self.check_file = false;
                 kpi.msg = kpi.msg + "\n" + gettext("Score calculation type format is not correct");
             }
             if (operator.indexOf(kpi.operator) == -1 && kpi.operator.trim()) {
                 kpi.validated = false;
-                that.check_file = false;
+                self.check_file = false;
                 kpi.msg = kpi.msg + "\n" + gettext('Operator format is not correct');
             }
             if ( kpi.operator.trim() == '') {
                 kpi.validated = false;
-                that.check_file = false;
+                self.check_file = false;
                 kpi.msg = kpi.msg + "\n" + gettext('Operator must not empty');
             }
             scores.forEach(function (score) {
+                kpi[score] = kpi[score].toString().replace(',', '')
                 if (isNaN(kpi[score])) {
-                    messages += score.toUpperCase() + "\n"
+                    quarter_error += (scores.indexOf(score)+1) + ", "
                 }
-            });
+            })
+            months.forEach(function (month) {
+                kpi[month] = kpi[month].toString().replace(',', '')
+                if (isNaN(kpi[month])) {
+                    months_error += (months.indexOf(month)+1) + ", "
+                }
+            })
             if (kpi.msg.trim()[0] == '\n') {
                 kpi.msg = kpi.msg.slice(2, kpi.msg.length);
                 kpi.msg = kpi.msg.charAt(0).toUpperCase() + kpi.msg.slice(1);
@@ -776,10 +806,19 @@ var importKpiPosition = new Vue({
             if (operator.indexOf(kpi.operator) == -1 && kpi.operator) {
                 kpi.msg = kpi.msg + "\n" + gettext("Operator format is not correct");
             }
-            if (messages) {
+            if (isNaN(kpi.year) ) {
                 kpi.validated = false;
-                messages = messages.slice(0, -2) + " " + gettext("is not numbers");
-                kpi.msg = kpi.msg + "\n" + gettext("Quarter score") + " " + messages;
+                kpi.msg = kpi.msg + "\n" + "Điểm năm" + " không đúng định dạng";
+            }
+            if (quarter_error ) {
+                kpi.validated = false;
+                quarter_error = quarter_error.slice(0, -2) + " " + "không đúng định dạng";
+                kpi.msg = kpi.msg + "\n" + "Điểm quý" + " " + quarter_error;
+            }
+            if (months_error ) {
+                kpi.validated = false;
+                months_error = months_error.slice(0, -2) + " " + "không đúng định dạng";
+                kpi.msg = kpi.msg + "\n" + "Điểm tháng" + " " + months_error;
             }
             kpi.weight = kpi.weight.toString();
             kpi.weight = kpi.weight.replace(',', '.');
@@ -831,8 +870,8 @@ var importKpiPosition = new Vue({
             } else {
                 self.removeRowError(kpi._uuid)
             }
-            that.$set(that.kpis, index, kpi);
-            that.$set(that.data_edit_kpi, 'msg', kpi.msg);
+            self.$set(self.kpis, index, kpi);
+            self.$set(self.data_edit_kpi, 'msg', kpi.msg);
             try {
                 // auto scroll to error messages
                 setTimeout(function () {
@@ -841,7 +880,7 @@ var importKpiPosition = new Vue({
             } catch (err) {
 
             }
-            that.$set(that.kpis, index, kpi);
+            self.$set(self.kpis, index, kpi);
         },
         to_string: function (value) {
             return value != null ? value.toString() : null;
@@ -851,7 +890,7 @@ var importKpiPosition = new Vue({
             return operator.indexOf(_operator) == -1;
         },
         edit_kpi: function (index) {
-            that = this;
+            var that = this;
             that.data_edit_kpi.check_error = false;
             that.data_edit_kpi.msg = that.kpis[index].msg;
             that.data_edit_kpi.data = JSON.parse(JSON.stringify(that.kpis[index]));
@@ -914,11 +953,11 @@ var importKpiPosition = new Vue({
         },
         convertNewStructData: function (kpi) {
             var data_import_kpi = {
-                year_target: kpi.year,
-                quarter_1_target: kpi.q1,
-                quarter_2_target: kpi.q2,
-                quarter_3_target: kpi.q3,
-                quarter_4_target: kpi.q4,
+                year_target: parseFloat(kpi.year) || null,
+                quarter_1_target: parseFloat(kpi.q1) || null,
+                quarter_2_target: parseFloat(kpi.q2) || null,
+                quarter_3_target: parseFloat(kpi.q3) || null,
+                quarter_4_target: parseFloat(kpi.q4) || null,
                 bsc_category: kpi.bsc_category,
                 group_name: kpi.goal,
                 kpilib_unique_id:'',
@@ -934,24 +973,24 @@ var importKpiPosition = new Vue({
                 year_data: {
                     months_target: {
                         quarter_1: {
-                            month_1_target: kpi.t1,
-                            month_2_target: kpi.t2,
-                            month_3_target: kpi.t3
+                            month_1_target: parseFloat(kpi.t1) || null,
+                            month_2_target: parseFloat(kpi.t2) || null,
+                            month_3_target: parseFloat(kpi.t3) || null
                         },
                         quarter_2: {
-                            month_1_target: kpi.t4,
-                            month_2_target: kpi.t5,
-                            month_3_target: kpi.t6
+                            month_1_target: parseFloat(kpi.t4) || null,
+                            month_2_target: parseFloat(kpi.t5) || null,
+                            month_3_target: parseFloat(kpi.t6) || null
                         },
                         quarter_3: {
-                            month_1_target: kpi.t7,
-                            month_2_target: kpi.t8,
-                            month_3_target: kpi.t9
+                            month_1_target: parseFloat(kpi.t7) || null,
+                            month_2_target: parseFloat(kpi.t8) || null,
+                            month_3_target: parseFloat(kpi.t9) || null
                         },
                         quarter_4: {
-                            month_1_target: kpi.t10,
-                            month_2_target: kpi.t11,
-                            month_3_target: kpi.t12
+                            month_1_target: parseFloat(kpi.t10) || null,
+                            month_2_target: parseFloat(kpi.t11) || null,
+                            month_3_target: parseFloat(kpi.t12) || null
                         }
                     }
                 }
