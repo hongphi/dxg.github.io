@@ -10,7 +10,7 @@ Vue.component('edit-import-kpi-modal', {
         return {
             data_edit_kpi: {},
             showmodal: false,
-            method: ["sum", "average", "most_recent", "tính tổng", "trung bình", "tháng gần nhất"],
+            method: ["sum", "average", "most_recent", "tổng", "trung bình", "tháng/quý gần nhất"],
         }
     },
     mounted: function () {
@@ -59,7 +59,27 @@ Vue.component('edit-import-kpi-modal', {
         trigger_confirm_edit_kpi: function () {
             var self = this
                 self.$emit('comfirm',self.data_edit_kpi)
-        }
+        },
+        check_number: function(e){
+            var _number = String.fromCharCode(e.keyCode);
+            if ('0123456789.'.indexOf(_number) !== -1) {
+                return _number;
+            }
+            e.preventDefault();
+            return false;
+        },
+        check_paste: function (evt) {
+                evt.preventDefault();
+                evt.stopPropagation();
+        },
+        valid_change: function (obj, prop) {
+            var val = parseFloat(obj[prop]);
+            if (isNaN(val)) {
+                Vue.set(obj, prop, null);
+            } else {
+                Vue.set(obj, prop, val);
+            }
+        },
     }
 })
 
@@ -99,7 +119,7 @@ data: function () {
         organization:{},
         file: {},
         check_total: 0,
-        method: ["sum", "average", "most_recent", "tính tổng", "trung bình", "tháng gần nhất"],
+        method: ["sum", "average", "most_recent", "tổng", "trung bình", "tháng/quý gần nhất"],
         method_save: '',
 
     }
@@ -721,13 +741,11 @@ methods: {
         var that = this;
         var operator = ['<=', '>=', '='];
         var scores = ['q1', 'q2', 'q3', 'q4'];
+        var months = ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10', 't11', 't12']
         if (index == undefined) {
             return;
         }
         var kpi = self.kpis[index];
-        if (self.enable_allocation_target){
-            kpi = that.validateTargetScoreFollowAllocationTarget(kpi)
-        }
         kpi.weight = kpi.weight.toString()
         if(!kpi.score_calculation_type){
             kpi.score_calculation_type = ""
@@ -747,6 +765,9 @@ methods: {
 
         kpi.msg = '';
         that.check_file = true;
+        var quarter_error = '';// lưu quý bị lỗi
+        var months_error = '';// lưu tháng bị lỗi
+
         cloudjetRequest.ajax({
             type: "POST",
             url: '/api/kpis/import/validate',
@@ -818,16 +839,37 @@ methods: {
                         that.check_file = false;
                         kpi.msg = kpi.msg + "\n" + gettext("Score calculation type format is not correct");
                     }
-                    scores.forEach(function (score) {
-                        if (isNaN(kpi[score])) {
-                            messages += score.toUpperCase() + ', '
-                        }
-                    });
                 }
-                if (messages) {
+                kpi.year = kpi.year.toString().replace(',', '')
+                if (isNaN(kpi.year) ) {
                     kpi.validated = false;
-                    messages = messages.slice(0, -2) + " " + gettext("is not numbers");
-                    kpi.msg = kpi.msg + "\n" + gettext("Quarter score") + " " + messages;
+                    kpi.msg = kpi.msg + "\n" + "Điểm năm" + " không đúng định dạng";
+                }
+                scores.forEach(function (score) {
+                    kpi[score] = kpi[score].toString().replace(',', '')
+                    if (isNaN(kpi[score])) {
+                        quarter_error += (scores.indexOf(score)+1) + ", "
+                    }
+                })
+                months.forEach(function (month) {
+                    kpi[month] = kpi[month].toString().replace(',', '')
+                    if (isNaN(kpi[month])) {
+                        months_error += (months.indexOf(month)+1) + ", "
+                    }
+                })
+                if (quarter_error ) {
+                    kpi.validated = false;
+                    quarter_error = quarter_error.slice(0, -2) + " " + "không đúng định dạng";
+                    kpi.msg = kpi.msg + "\n" + "Điểm quý" + " " + quarter_error;
+                }
+                if (months_error ) {
+                    kpi.validated = false;
+                    months_error = months_error.slice(0, -2) + " " + "không đúng định dạng";
+                    kpi.msg = kpi.msg + "\n" + "Điểm tháng" + " " + months_error;
+                }
+
+                if (self.enable_allocation_target){
+                    kpi = that.validateTargetScoreFollowAllocationTarget(kpi)
                 }
                 kpi.weight = kpi.weight.replace(',', '.');
                 if (isNaN(parseFloat(kpi.weight)) && kpi.weight) {
@@ -1006,43 +1048,43 @@ methods: {
     },
     convertNewStructData: function(kpi){
         var data_import_kpi= {
-            year_target: kpi.year,
-            q1: kpi.q1,
-            q2: kpi.q2,
-            q3: kpi.q3,
-            q4: kpi.q4,
+            year_target: parseFloat(kpi.year) || null,
+            q1: parseFloat(kpi.q1) || null,
+            q2: parseFloat(kpi.q2) || null,
+            q3: parseFloat(kpi.q3) || null,
+            q4: parseFloat(kpi.q4) || null,
             check_goal: kpi.check_goal,
             goal: kpi.goal,
             kpi: kpi.kpi,
             kpi_id: kpi.kpi_id,
             unit: kpi.unit,
             measurement: kpi.measurement,
-            score_calculation_type: kpi.method,
+            score_calculation_type: kpi.score_calculation_type,
             operator: kpi.operator,
-            weight: kpi.weight,
+            weight: parseFloat(kpi.weight) || null,
             email: kpi.email,
             code: kpi.code,
             year_data: {
                 months_target: {
                     quarter_1: {
-                        month_1: kpi.t1,
-                        month_2: kpi.t2,
-                        month_3: kpi.t3
+                        month_1: parseFloat(kpi.t1) || null,
+                        month_2: parseFloat(kpi.t2) || null,
+                        month_3: parseFloat(kpi.t3) || null
                     },
                     quarter_2: {
-                        month_1: kpi.t4,
-                        month_2: kpi.t5,
-                        month_3: kpi.t6
+                        month_1: parseFloat(kpi.t4) || null,
+                        month_2: parseFloat(kpi.t5) || null,
+                        month_3: parseFloat(kpi.t6) || null
                     },
                     quarter_3: {
-                        month_1: kpi.t7,
-                        month_2: kpi.t8,
-                        month_3: kpi.t9
+                        month_1: parseFloat(kpi.t7) || null,
+                        month_2: parseFloat(kpi.t8) || null,
+                        month_3: parseFloat(kpi.t9) || null
                     },
                     quarter_4: {
-                        month_1: kpi.t10,
-                        month_2: kpi.t11,
-                        month_3: kpi.t12
+                        month_1: parseFloat(kpi.t10) || null,
+                        month_2: parseFloat(kpi.t11) || null,
+                        month_3: parseFloat(kpi.t12) || null
                     }
                 }
             }
@@ -1072,22 +1114,6 @@ methods: {
             that.method_save = that.method[p];
         }
         kpi.score_calculation_type = that.method_save;
-
-        if (that.to_string(kpi.q1) == '') {
-            kpi.q1 = null;
-        }
-        if (that.to_string(kpi.q2) == '') {
-            kpi.q2 = null;
-        }
-        if (that.to_string(kpi.q3) == '') {
-            kpi.q3 = null;
-        }
-        if (that.to_string(kpi.q4) == '') {
-            kpi.q4 = null;
-        }
-        if (that.to_string(kpi.year) == '') {
-            kpi.year = null;
-        }
         var kpi_data_import = that.convertNewStructData(kpi)
         cloudjetRequest.ajax({
             type: "POST",

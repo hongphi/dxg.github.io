@@ -39,7 +39,7 @@ Vue.component('cjs-component-selected-position', selected_position);
     data: function () {
         return {
             data_edit_kpi: {},
-            method: ["sum", "average", "most_recent", "tính tổng", "trung bình", "tháng gần nhất"],
+            method: ["sum", "average", "most_recent", "tổng", "trung bình", "tháng/quý gần nhất"],
         }
     },
     watch: {
@@ -119,7 +119,7 @@ var importKpiPosition = new Vue({
         organization:{},
         file: {},
         check_total: 0,
-        method: ["sum", "average", "most_recent", "tính tổng", "trung bình", "tháng gần nhất"],
+        method: ["sum", "average", "most_recent", "tổng", "trung bình", "tháng/quý gần nhất"],
         group_bsc_category:{
             "F":"financial",
             "C":"customer",
