@@ -249,7 +249,7 @@ var importKpiPosition = new Vue({
             this.handleFile(e);
         },
         handleFile: function (e) {
-            that = this;
+            var that = this;
             that.kpis.length = 0;
             that.check_file = true;
             var files = e.target.files || e.dataTransfer.files;
@@ -514,6 +514,7 @@ var importKpiPosition = new Vue({
                                             "check_error_quarter_3": false,
                                             "check_error_quarter_4": false,
                                             "index": "",
+                                            "msg":"",
                                             "bsc_category": "",
                                             "data_source":datasource,
                                             "_uuid": makeid()
@@ -586,7 +587,7 @@ var importKpiPosition = new Vue({
         },
         init: function () {
 
-            that = this;
+            var that = this;
             that.getOrg()
         },
         getCategory: function(category){
@@ -605,6 +606,7 @@ var importKpiPosition = new Vue({
         },
         check_add_all: function () {
             var count = 0;
+            var that = this
             for (var i = 0; i < that.kpis.length; i++) {
                 if (kpis[i].msg) return false;
                 if (kpis[i].status == 'success') count++;
@@ -719,7 +721,6 @@ var importKpiPosition = new Vue({
         },
         validate_kpi: function (index) {
             var self = this
-            var that = this;
             var operator = ['<=', '>=', '='];
             var scores = ['q1', 'q2', 'q3', 'q4'];
             var months = ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10', 't11', 't12']
@@ -727,10 +728,7 @@ var importKpiPosition = new Vue({
                 return;
             }
             var kpi = self.kpis[index];
-            if (self.enable_allocation_target) {
-                kpi = self.validateTargetScoreFollowAllocationTarget(kpi)
-            }
-            kpi.bsc_category = kpi.type_kpi.toString();
+            kpi.bsc_category = kpi.type_kpi == null? kpi.type_kpi :kpi.type_kpi.toString();
             kpi.weight = kpi.weight.toString()
             if (!kpi.score_calculation_type) {
                 kpi.score_calculation_type = ""
@@ -748,7 +746,6 @@ var importKpiPosition = new Vue({
             var quarter_error = '';// lưu quý bị lỗi
             var months_error = '';// lưu tháng bị lỗi
             kpi.validated = true;
-            kpi.year = kpi.year.toString().replace(',', '')
             if (kpi.bsc_category.trim() == '') {
                 kpi.validated = false;
                 kpi.msg = kpi.msg + "\n" + gettext("KPI code must not be empty");
@@ -777,14 +774,15 @@ var importKpiPosition = new Vue({
                 self.check_file = false;
                 kpi.msg = kpi.msg + "\n" + gettext('Operator must not empty');
             }
+            kpi.year = kpi.year == null?kpi.year:kpi.year.toString().replace(',', '')
             scores.forEach(function (score) {
-                kpi[score] = kpi[score].toString().replace(',', '')
+                kpi[score] = kpi[score]== null?kpi[score]:kpi[score].toString().replace(',', '')
                 if (isNaN(kpi[score])) {
                     quarter_error += (scores.indexOf(score)+1) + ", "
                 }
             })
             months.forEach(function (month) {
-                kpi[month] = kpi[month].toString().replace(',', '')
+                kpi[month] = kpi[month]== null?kpi[month]:kpi[month].toString().replace(',', '')
                 if (isNaN(kpi[month])) {
                     months_error += (months.indexOf(month)+1) + ", "
                 }
@@ -824,8 +822,10 @@ var importKpiPosition = new Vue({
                 months_error = months_error.slice(0, -2) + " " + "không đúng định dạng";
                 kpi.msg = kpi.msg + "\n" + "Điểm tháng" + " " + months_error;
             }
-            kpi.weight = kpi.weight.toString();
-            kpi.weight = kpi.weight.replace(',', '.');
+            if (self.enable_allocation_target) {
+                kpi = self.validateTargetScoreFollowAllocationTarget(kpi)
+            }
+            kpi.weight = kpi.weight == null ? kpi.weight:kpi.weight.toString().replace(',', '');
             if (isNaN(parseFloat(kpi.weight)) && kpi.weight) {
                 kpi.validated = false;
                 kpi.msg = kpi.msg + "\n" + gettext("Weights are not formatted correctly");

@@ -230,7 +230,7 @@ methods: {
         this.handleFile(e);
     },
     handleFile: function (e) {
-        that = this;
+         var that = this;
         that.kpis.length = 0;
         that.check_file = true;
         var files = e.target.files || e.dataTransfer.files;
@@ -521,6 +521,7 @@ methods: {
                                         "check_error_quarter_3": false,
                                         "check_error_quarter_4": false,
                                         "index": "",
+                                        "msg":"",
                                         "_uuid": makeid()
 
 
@@ -600,7 +601,7 @@ methods: {
     },
     init: function () {
 
-        that = this;
+         var that = this;
         that.getOrg()
 
         //  document.getElementById('drop').addEventListener('drop', that.handleDrop, false);
@@ -609,6 +610,7 @@ methods: {
     },
     check_add_all: function () {
         var count = 0;
+        var that = this
         for (var i = 0; i < that.kpis.length; i++) {
             if (kpis[i].msg) return false;
             if (kpis[i].status == 'success') count++;
@@ -738,7 +740,6 @@ methods: {
     },
     validate_kpi: function (index) {
         var self = this
-        var that = this;
         var operator = ['<=', '>=', '='];
         var scores = ['q1', 'q2', 'q3', 'q4'];
         var months = ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10', 't11', 't12']
@@ -746,7 +747,7 @@ methods: {
             return;
         }
         var kpi = self.kpis[index];
-        kpi.weight = kpi.weight.toString()
+        kpi.weight =  self.to_string(kpi.weight)
         if(!kpi.score_calculation_type){
             kpi.score_calculation_type = ""
         }
@@ -764,7 +765,7 @@ methods: {
         }
 
         kpi.msg = '';
-        that.check_file = true;
+        self.check_file = true;
         var quarter_error = '';// lưu quý bị lỗi
         var months_error = '';// lưu tháng bị lỗi
 
@@ -776,32 +777,25 @@ methods: {
                 // console.log('yes, we can!');
                 // router.push('/');
                 kpi.status = null;
-                var messages = '';
                 if (responseJSON['status'] == 'ok') {
                     kpi.validated = true;
-                    if (that.method.indexOf(kpi.score_calculation_type.trim().toLowerCase()) == -1){
+                    if (self.method.indexOf(kpi.score_calculation_type.trim().toLowerCase()) == -1){
                         kpi.validated = false;
                         kpi.status = responseJSON['status'];
-                        that.check_file = false;
+                        self.check_file = false;
                         kpi.msg = kpi.msg + "\n" + gettext("Score calculation type format is not correct");
                     }
 
                     if (operator.indexOf(kpi.operator) == -1 && kpi.operator) {
                         kpi.validated = false;
                         kpi.status = responseJSON['status'];
-                        that.check_file = false;
+                        self.check_file = false;
                         kpi.msg = kpi.msg + "\n" + gettext('Operator format is not correct');
                     }
                     if (kpi.code.trim()==''){
                         kpi.validated = false;
                         kpi.msg = kpi.msg + "\n" +gettext("Code must not be empty");
                     }
-
-                    scores.forEach(function (score) {
-                        if (isNaN(kpi[score])) {
-                            messages += score.toUpperCase() + ', '
-                        }
-                    });
                     if (kpi.msg.trim()[0] == '\n') {
                         kpi.msg = kpi.msg.slice(2, kpi.msg.length);
                         kpi.msg = kpi.msg.charAt(0).toUpperCase() + kpi.msg.slice(1);
@@ -810,7 +804,7 @@ methods: {
                     kpi.status = responseJSON['status'];
                     kpi.validated = false;
                     kpi.msg = responseJSON['message'];
-                    that.check_file = false;
+                    self.check_file = false;
 
                     if (kpi.unit.trim()==''){
                         kpi.validated = false;
@@ -833,26 +827,26 @@ methods: {
                     if (operator.indexOf(kpi.operator) == -1 && kpi.operator) {
                         kpi.msg = kpi.msg + "\n" + gettext("Operator format is not correct");
                     }
-                    if (that.method.indexOf(kpi.score_calculation_type.trim().toLowerCase()) == -1){
+                    if (self.method.indexOf(kpi.score_calculation_type.trim().toLowerCase()) == -1){
                         kpi.validated = false;
                         kpi.status = responseJSON['status'];
-                        that.check_file = false;
+                        self.check_file = false;
                         kpi.msg = kpi.msg + "\n" + gettext("Score calculation type format is not correct");
                     }
                 }
-                kpi.year = kpi.year.toString().replace(',', '')
+                kpi.year = kpi.year == null? kpi.year : kpi.year.toString().replace(',', '')
                 if (isNaN(kpi.year) ) {
                     kpi.validated = false;
                     kpi.msg = kpi.msg + "\n" + "Điểm năm" + " không đúng định dạng";
                 }
                 scores.forEach(function (score) {
-                    kpi[score] = kpi[score].toString().replace(',', '')
+                    kpi[score] = kpi[score] == null? kpi[score]:kpi[score].toString().replace(',', '')
                     if (isNaN(kpi[score])) {
                         quarter_error += (scores.indexOf(score)+1) + ", "
                     }
                 })
                 months.forEach(function (month) {
-                    kpi[month] = kpi[month].toString().replace(',', '')
+                    kpi[month] = kpi[month] == null? kpi[month]:kpi[month].toString().replace(',', '')
                     if (isNaN(kpi[month])) {
                         months_error += (months.indexOf(month)+1) + ", "
                     }
@@ -869,9 +863,9 @@ methods: {
                 }
 
                 if (self.enable_allocation_target){
-                    kpi = that.validateTargetScoreFollowAllocationTarget(kpi)
+                    kpi = self.validateTargetScoreFollowAllocationTarget(kpi)
                 }
-                kpi.weight = kpi.weight.replace(',', '.');
+                kpi.weight = kpi.weight == null?kpi.weight :kpi.weight.replace(',', '');
                 if (isNaN(parseFloat(kpi.weight)) && kpi.weight) {
                     kpi.validated = false;
                     kpi.msg = kpi.msg + "\n" +gettext("Weights are not formatted correctly");
@@ -921,8 +915,8 @@ methods: {
                 }else{
                     self.removeRowError(kpi._uuid)
                 }
-                that.$set(that.kpis, index, kpi);
-                that.$set(that.data_edit_kpi, 'msg', kpi.msg);
+                self.$set(self.kpis, index, kpi);
+                self.$set(self.data_edit_kpi, 'msg', kpi.msg);
                 try{
                     // auto scroll to error messages
                     setTimeout(function(){
@@ -938,7 +932,7 @@ methods: {
                 kpi.msg = null;
                 try {
                     kpi.msg = "Validate failed: " + jqXHR.responseJSON['message'];
-                    that.check_file = false;
+                    self.check_file = false;
                 } catch (err) {
                 }
                 if(kpi.msg !== ''){
@@ -946,14 +940,14 @@ methods: {
                 }else{
                     self.removeRowError(kpi._uuid)
                 }
-                that.$set(that.kpis, index, kpi);
+                self.$set(self.kpis, index, kpi);
             },
             complete: function (data) {
-                that.check_total++;
-                if (that.check_total == that.kpis.length) {
+                self.check_total++;
+                if (self.check_total == self.kpis.length) {
                     setTimeout(function () {
                         $('body').loading('stop');
-                        that.check_total = 0;
+                        self.check_total = 0;
                     }, 1000)
                 }
             },
@@ -961,7 +955,7 @@ methods: {
             contentType: "application/json"
 
         });
-        that.$set(that.kpis, index, kpi);
+        self.$set(self.kpis, index, kpi);
     },
     to_string: function (value) {
         return value != null ? value.toString() : null;
@@ -974,7 +968,7 @@ methods: {
         return operator.indexOf(_operator) == -1;
     },
     edit_kpi: function (index) {
-        that = this;
+        var that = this;
         that.data_edit_kpi.check_error = false;
         that.data_edit_kpi.msg = that.kpis[index].msg;
         that.data_edit_kpi.data = JSON.parse(JSON.stringify(that.kpis[index]));
