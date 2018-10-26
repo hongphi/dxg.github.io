@@ -834,19 +834,19 @@ methods: {
                         kpi.msg = kpi.msg + "\n" + gettext("Score calculation type format is not correct");
                     }
                 }
-                kpi.year = kpi.year == null? kpi.year : kpi.year.toString().replace(',', '')
+                kpi.year = kpi.year == null? kpi.year : kpi.year.toString().replace(/,/g, '')
                 if (isNaN(kpi.year) ) {
                     kpi.validated = false;
                     kpi.msg = kpi.msg + "\n" + "Điểm năm" + " không đúng định dạng";
                 }
                 scores.forEach(function (score) {
-                    kpi[score] = kpi[score] == null? kpi[score]:kpi[score].toString().replace(',', '')
+                    kpi[score] = kpi[score] == null? kpi[score]:kpi[score].toString().replace(/,/g, '')
                     if (isNaN(kpi[score])) {
                         quarter_error += (scores.indexOf(score)+1) + ", "
                     }
                 })
                 months.forEach(function (month) {
-                    kpi[month] = kpi[month] == null? kpi[month]:kpi[month].toString().replace(',', '')
+                    kpi[month] = kpi[month] == null? kpi[month]:kpi[month].toString().replace(/,/g, '')
                     if (isNaN(kpi[month])) {
                         months_error += (months.indexOf(month)+1) + ", "
                     }
@@ -865,7 +865,7 @@ methods: {
                 if (self.enable_allocation_target){
                     kpi = self.validateTargetScoreFollowAllocationTarget(kpi)
                 }
-                kpi.weight = kpi.weight == null?kpi.weight :kpi.weight.replace(',', '');
+                kpi.weight = kpi.weight == null?kpi.weight :kpi.weight.replace(/,/g, '');
                 if (isNaN(parseFloat(kpi.weight)) && kpi.weight) {
                     kpi.validated = false;
                     kpi.msg = kpi.msg + "\n" +gettext("Weights are not formatted correctly");

@@ -774,15 +774,15 @@ var importKpiPosition = new Vue({
                 self.check_file = false;
                 kpi.msg = kpi.msg + "\n" + gettext('Operator must not empty');
             }
-            kpi.year = kpi.year == null?kpi.year:kpi.year.toString().replace(',', '')
+            kpi.year = kpi.year == null?kpi.year:kpi.year.toString().replace(/,/g, '')
             scores.forEach(function (score) {
-                kpi[score] = kpi[score]== null?kpi[score]:kpi[score].toString().replace(',', '')
+                kpi[score] = kpi[score]== null?kpi[score]:kpi[score].toString().replace(/,/g, '')
                 if (isNaN(kpi[score])) {
                     quarter_error += (scores.indexOf(score)+1) + ", "
                 }
             })
             months.forEach(function (month) {
-                kpi[month] = kpi[month]== null?kpi[month]:kpi[month].toString().replace(',', '')
+                kpi[month] = kpi[month]== null?kpi[month]:kpi[month].toString().replace(/,/g, '')
                 if (isNaN(kpi[month])) {
                     months_error += (months.indexOf(month)+1) + ", "
                 }
@@ -825,7 +825,7 @@ var importKpiPosition = new Vue({
             if (self.enable_allocation_target) {
                 kpi = self.validateTargetScoreFollowAllocationTarget(kpi)
             }
-            kpi.weight = kpi.weight == null ? kpi.weight:kpi.weight.toString().replace(',', '');
+            kpi.weight = kpi.weight == null ? kpi.weight:kpi.weight.toString().replace(/,/g, '');
             if (isNaN(parseFloat(kpi.weight)) && kpi.weight) {
                 kpi.validated = false;
                 kpi.msg = kpi.msg + "\n" + gettext("Weights are not formatted correctly");
