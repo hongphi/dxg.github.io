@@ -466,12 +466,6 @@ methods: {
                                     } catch (err) {
                                         var email = '';
                                     }
-                                    try {
-                                        var code = sheet["AD" + i].w;
-                                    } catch (err) {
-                                        var code = '';
-                                    }
-
 
 
 
@@ -487,7 +481,6 @@ methods: {
 
                                     // </check-duplicated>
                                     that.kpis.push({
-                                        "code": code,
                                         "kpi_id": kpi_id,
                                         "check_goal": check_goal,
                                         "goal": goal,
@@ -701,7 +694,7 @@ methods: {
             self.method_save = self.method[p];
         }
         else{
-            self.method_save = self.method[p];
+            self.method_save = "";
             check_score_calculation_type = false
         }
         kpi.score_calculation_type = self.method_save;
@@ -751,9 +744,6 @@ methods: {
         if(!kpi.score_calculation_type){
             kpi.score_calculation_type = ""
         }
-        if(!kpi.code){
-            kpi.code = ""
-        }
         if(!kpi.kpi_id){
             kpi.kpi_id = ""
         }
@@ -763,11 +753,19 @@ methods: {
         if(!kpi.measurement){
             kpi.measurement = ""
         }
-
+         if(!kpi.goal){
+            kpi.goal = ""
+        }
+        if(!kpi.kpi){
+            kpi.kpi = ""
+        }
+        if(!kpi.operator){
+            kpi.operator = ""
+        }
         kpi.msg = '';
         self.check_file = true;
-        var quarter_error = '';// lưu quý bị lỗi
-        var months_error = '';// lưu tháng bị lỗi
+        var quarter_error = [];// mảng lưu quý bị lỗi
+        var months_error = [];// mảng lưu tháng bị lỗi
 
         cloudjetRequest.ajax({
             type: "POST",
@@ -792,10 +790,6 @@ methods: {
                         self.check_file = false;
                         kpi.msg = kpi.msg + "\n" + gettext('Operator format is not correct');
                     }
-                    if (kpi.code.trim()==''){
-                        kpi.validated = false;
-                        kpi.msg = kpi.msg + "\n" +gettext("Code must not be empty");
-                    }
                     if (kpi.msg.trim()[0] == '\n') {
                         kpi.msg = kpi.msg.slice(2, kpi.msg.length);
                         kpi.msg = kpi.msg.charAt(0).toUpperCase() + kpi.msg.slice(1);
@@ -809,10 +803,6 @@ methods: {
                     if (kpi.unit.trim()==''){
                         kpi.validated = false;
                         kpi.msg = kpi.msg + "\n" + gettext("Unit is not formatted correctly");
-                    }
-                    if (kpi.code.trim()==''){
-                        kpi.validated = false;
-                        kpi.msg = kpi.msg + "\n" +gettext("Code must not be empty");
                     }
                     if (kpi.kpi_id.trim()==''){
                         kpi.validated = false;
@@ -840,25 +830,25 @@ methods: {
                     kpi.msg = kpi.msg + "\n" + "Điểm năm" + " không đúng định dạng";
                 }
                 scores.forEach(function (score) {
-                    kpi[score] = kpi[score] == null? kpi[score]:kpi[score].toString().replace(/,/g, '')
+                    kpi[score] = kpi[score]== null?kpi[score]:kpi[score].toString().replace(/,/g, '')
                     if (isNaN(kpi[score])) {
-                        quarter_error += (scores.indexOf(score)+1) + ", "
+                        quarter_error.push(scores.indexOf(score)+1)
                     }
                 })
                 months.forEach(function (month) {
-                    kpi[month] = kpi[month] == null? kpi[month]:kpi[month].toString().replace(/,/g, '')
+                    kpi[month] = kpi[month]== null?kpi[month]:kpi[month].toString().replace(/,/g, '')
                     if (isNaN(kpi[month])) {
-                        months_error += (months.indexOf(month)+1) + ", "
+                        months_error.push(months.indexOf(month)+1)
                     }
                 })
-                if (quarter_error ) {
+                if (quarter_error.length > 0 ) {
                     kpi.validated = false;
-                    quarter_error = quarter_error.slice(0, -2) + " " + "không đúng định dạng";
-                    kpi.msg = kpi.msg + "\n" + "Điểm quý" + " " + quarter_error;
+                    var quarter_error_str = quarter_error.join(', ') + " " + "không đúng định dạng";
+                    kpi.msg = kpi.msg + "\n" + "Điểm quý" + " " + quarter_error_str;
                 }
-                if (months_error ) {
+                if (months_error.length > 0 ) {
                     kpi.validated = false;
-                    months_error = months_error.slice(0, -2) + " " + "không đúng định dạng";
+                    var months_error_str = months_error.join(', ') + " " + "không đúng định dạng";
                     kpi.msg = kpi.msg + "\n" + "Điểm tháng" + " " + months_error;
                 }
 
@@ -978,12 +968,14 @@ methods: {
         }
         else if (that.method.indexOf(that.data_edit_kpi.data.score_calculation_type.trim().toLowerCase())>-1){
             that.method_save = that.data_edit_kpi.data.score_calculation_type;
-            p = that.method.indexOf(that.data_edit_kpi.data.score_calculation_type.trim().toLowerCase());
-            if(p>2){
+            var p = that.method.indexOf(that.data_edit_kpi.data.score_calculation_type.trim().toLowerCase());
+            if(p > 2 && p<6){
                 that.data_edit_kpi.data.score_calculation_type = that.method[p-3];
             }
-            if(p<3){
+            else if(0 <= p && p<=2){
                 that.data_edit_kpi.data.score_calculation_type = that.method[p];
+            }else {
+                that.data_edit_kpi.data.score_calculation_type = ""
             }
         }
         if (parseFloat(that.data_edit_kpi.data.weight) != NaN) {
@@ -1057,7 +1049,6 @@ methods: {
             operator: kpi.operator,
             weight: parseFloat(kpi.weight) || null,
             email: kpi.email,
-            code: kpi.code,
             year_data: {
                 months_target: {
                     quarter_1: {
@@ -1101,11 +1092,13 @@ methods: {
         that.$set(that.kpis, index, kpi);
 
         var p = that.method.indexOf(kpi.score_calculation_type.trim().toLowerCase());
-        if (p > 2){
+        if (p > 2 && p <6){
             that.method_save = that.method[p-3];
         }
-        else{
+        else if( 0 <= p && p <= 2){
             that.method_save = that.method[p];
+        }else {
+            that.method_save = "";
         }
         kpi.score_calculation_type = that.method_save;
         var kpi_data_import = that.convertNewStructData(kpi)

@@ -146,12 +146,6 @@
 #list-exscore-lib-component  .ui.celled.ordered.list>.item:hover:before{
     color:#ababab;
 }
-.modal-backdrop{
-    z-index:10000002;
-}
-.modal{
-    z-index: 10000003;
-}
 .no-border-top{
     border-top:none!important;
 }
