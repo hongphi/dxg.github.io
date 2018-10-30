@@ -1251,7 +1251,11 @@ div.btn-wrapper .btn {
 }
 
 #navbar .material-icons.font-16 {
+    position: relative;
     margin-right: 10px;
+    font-size: 16px;
+    margin-top: -2px;
+    bottom: 1px;
 }
 
 .one {
@@ -1309,10 +1313,6 @@ div.btn-wrapper .btn {
     padding: 0px 0px !important;
     font-weight: normal;
 }
-#navbar .nav-left .active {
-    border-left: 0.1px solid rgba(255, 255, 255, 0.25);
-    border-right: 0.1px solid rgba(255, 255, 255, 0.25);
-}
 
 #navbar .nav-left .active a {
     color: white;
@@ -1322,7 +1322,7 @@ div.btn-wrapper .btn {
 
 #navbar .nav-left .dropdown ul li a {
     line-height: 1;
-    padding: 8px 15px 8px 15px;
+    padding: 8px 20px 8px 15px;
     text-transform: none;
 }
 
