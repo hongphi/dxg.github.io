@@ -1067,6 +1067,12 @@ var v = new Vue({
             var self = this;
             return getKPIParent(self.kpi_list,[]);
         },
+        parentKPIsUndelay: function () {
+            var kpis = Object.values(this.parentKPIs).filter(function (kpi) {
+                return kpi.weight > 0;
+            })
+            return kpis;
+        },
         adjust_min_performance: function () {
             var self = this;
             return ((self.adjusting_kpi.achievement_calculation_method_extra.bottom.target / self.adjusting_kpi['month_' + self.adjusting_kpi.adjusting_month + '_target']) * 100).toFixed(2);
@@ -1383,6 +1389,11 @@ var v = new Vue({
         can_edit_current_month: function (current_month, monthly_review_lock){ //check whether currrent month is allowed to edit
             return monthly_review_lock == "allow_all"?true: current_month==monthly_review_lock
         },
+        formatWeight: function (val) {
+                if (typeof val == 'number') {
+                    return val.toFixed(2);
+                }
+            },
         is_manager: function(){
             var is_manager = COMMON.ManagerIdOfVieweedUser == COMMON.UserId;
             return is_manager
@@ -2514,21 +2525,6 @@ var v = new Vue({
 
 
         },
-        change_weight: function(kpi){
-            var that = this;
-            if(kpi.weight<=0){
-                swal({
-                    type: 'error',
-                    title: gettext("Unsuccessful"),
-                    text: gettext('Please deactive this KPI before you change KPI\'s weight to 0'),
-                    showConfirmButton: true,
-                    timer: 5000,
-                })
-                that.kpi_list[kpi.id].weight = that.cache_weight;
-                return false;
-            }
-            this.calculate_total_weight();
-        },
         show_unique_code_modal: function (kpi) {
 
             this.current_kpi = kpi;
@@ -3371,7 +3367,6 @@ var v = new Vue({
                 success: function (data) {
                     that.kpi_list[kpi.id] = Object.assign(that.kpi_list[kpi.id], data);
                     that.get_current_employee_performance();
-                    that.$forceUpdate();
                     for (i = 1; i <= 4; i++) {
                         $('#qtip' + kpi.id + '_' + i).qtip({
                             content: {
@@ -3535,7 +3530,6 @@ var v = new Vue({
                     var month_3_target = kpi.month_3_target ? kpi.month_3_target : 0;
                     that.$set('kpi_list[' + kpi.id + '].target', month_1_target + month_2_target + month_3_target)
                 }
-
                 //console.log(that.kpi_list[kpi.id].month_2_target);
                 this.update_timeout = setTimeout(function () {
                     cloudjetRequest.ajax({
@@ -3575,7 +3569,6 @@ var v = new Vue({
                             that.kpi_list[kpi.id].target = data.kpi.target; //JSON.parse(data);
                             that.get_current_employee_performance();
                             that.triggeredReloadTargetPerformance(kpi.id)
-
                             success_requestcenter(gettext("Update successful!"));
                         },
                         error: function () {
