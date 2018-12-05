@@ -621,15 +621,21 @@ methods: {
         // Process conditions
 
         // year target bang voi tong target cac quy
-        kpi.year = !$.isNumeric(kpi.year)?null:parseFloat(kpi.year)
+        var year_target_input = !$.isNumeric(kpi.year) ? null : parseFloat(kpi.year).toFixed(4)
+        year_target_input = parseFloat(year_target_input) || null
+        sum_q = !$.isNumeric(sum_q) ? null : parseFloat(sum_q).toFixed(4)
+        sum_q = parseFloat(sum_q) || null
         var yearTargetValid =  kpi.year == sum_q
         if(!yearTargetValid){
             kpi.check_error_year = true
         }
         //bao loi khi thang khong theo phuong phap phan quy
         for(var i = 1;i<5; i++){
-            kpi['q' + i] = !$.isNumeric(kpi['q' + i])?null:parseFloat(kpi['q' + i])
-            if(!(kpi['q' + i] == totalQuarterArray[i -1])){
+            var quarter_target_input = !$.isNumeric(kpi['q' + i]) ? null : parseFloat(kpi['q' + i]).toFixed(4)
+            quarter_target_input = parseFloat(quarter_target_input) || null
+            totalQuarterArray[i - 1] = !$.isNumeric(totalQuarterArray[i - 1]) ? null : parseFloat(totalQuarterArray[i - 1]).toFixed(4)
+            totalQuarterArray[i - 1] = parseFloat(totalQuarterArray[i - 1]) || null
+            if (!(quarter_target_input == totalQuarterArray[i - 1])) {
                 kpi['check_error_quarter_' + i] = true
             }
         }

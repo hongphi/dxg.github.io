@@ -3304,21 +3304,18 @@ input[type="checkbox"] .styled:checked + label::after, input[type="radio"] .styl
 }
 
 #kpiscore-help .resize-modal{
-    width: 955px;
+    width: 950px;
 }
 
 #kpiscore-help .resize-body{
     max-height: 700px;
 }
-.table-score-help tbody tr th{
-    border-bottom: None!important;
-    background-color: #ffffff;
-    vertical-align: middle;
-}
 
 .table-score-help tbody tr td{
     border-bottom: None!important;
-    padding: 10px;
+    padding-left: 5px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .table-score-help tbody .financial-score-help{
@@ -3342,8 +3339,77 @@ input[type="checkbox"] .styled:checked + label::after, input[type="radio"] .styl
 .table-score-help tbody .sum-score-help{
     background-color: #337ab7;
     color: #ffffff;
+    font-weight: bold;
 }
 
 #kpiscore-help .header-no-line{
     border-bottom: None!important;
+}
+
+.table-score-help .row-no-background .kpi-name{
+    width: 480px;
+}
+
+.table-score-help .score-help-label th{
+    border-bottom: None!important;
+    background-color: #ffffff;
+    vertical-align: top;
+    padding-right: 20px;
+}
+
+.category-score-help th{
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+#company-vision-mission-wrapper .name-manager{
+    font-weight: bold;
+}
+
+#quarter_result .q-resutl-container .q-resutl-label{
+    font-size: 12px;
+}
+
+
+#company-vision-mission-wrapper .table-per-result .score-month td{
+    color: #666666!important;
+    font-weight: normal!important;
+    font-size: 12px!important;
+    background-color: #ffffff!important;
+}
+
+
+#company-vision-mission-wrapper .table-bordered{
+    font-size: 12px;
+    height: 161px;
+}
+
+#company-vision-mission-wrapper .table-per-result .score-month .score-month-label {
+    font-weight: bold!important;
+}
+
+#quarter_result .q-resutl-container .average-score-container{
+    margin-top: 15px;
+}
+
+#quarter_result .q-resutl-container .detail-score-help{
+    font-size: 12px!important;
+}
+
+#row-internal-score-help  th{
+    background-color: #fdf1f1;
+    color: #f27577;
+    text-transform: uppercase;
+    border: none!important;
+}
+
+#row-learninggrowth-score-help  th{
+    background-color: #edf5e7;
+    color: #53a413;
+    text-transform: uppercase;
+    border: none!important;
+}
+
+#kpiscore-help .sum-score-help .total-score{
+    font-size: 18px;
 }
